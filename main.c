@@ -10,6 +10,7 @@
     
 */
 #define HORIZ_WIDTH 32
+#define VERT_HEIGHT 12
 
 #define UPDATE_DELAY 1
 unsigned char oneRow[HORIZ_WIDTH * 2] = 
@@ -133,6 +134,8 @@ int main() {
     signed char horiz_dir = 1;
     signed char vert_dir = 1;
 
+    int target_line;
+
     // initializing
     dl_Init();
     init_colors();
@@ -176,7 +179,9 @@ int main() {
         ANTIC.vscrol = fine_vert_offset;
 
         for (i = 0; i < 12; ++i) {
-            *(unsigned int *)(DisplayList + 4 + (i * 3)) = (unsigned int)(oneRow) + coarse_horiz_offset + i;
+            target_line = i + coarse_vert_offset;
+            if (target_line >= 12) target_line -= 12;
+            *(unsigned int *)(DisplayList + 4 + ((target_line * 3))) = (unsigned int)(oneRow) + coarse_horiz_offset + i;
         }  
     }
 }
@@ -200,10 +205,10 @@ void horiz_scroll(signed char dir) {
         if (--fine_horiz_offset < 0) {
             // move coarsely
             fine_horiz_offset = 7;
-
-            if (++coarse_horiz_offset >= HORIZ_WIDTH) {
-                coarse_horiz_offset = 0;   
-            }        
+            if (--coarse_vert_offset < 0) {
+                coarse_vert_offset = VERT_HEIGHT;   
+            }   
+                   
         }
     }
     // else; no scrolling
@@ -216,9 +221,9 @@ void vert_scroll(signed char dir) {
             // move coarsely
             fine_vert_offset = 0;
 
-            if (--coarse_vert_offset < 0) {
-                coarse_vert_offset = HORIZ_WIDTH;   
-            }        
+            if (++coarse_horiz_offset >= HORIZ_WIDTH) {
+                coarse_horiz_offset = 0;   
+            }  
         }
     } else if (dir < 0) {
         // scroll right
@@ -226,7 +231,7 @@ void vert_scroll(signed char dir) {
             // move coarsely
             fine_vert_offset = 7;
 
-            if (++coarse_vert_offset >= HORIZ_WIDTH) {
+            if (++coarse_vert_offset >= VERT_HEIGHT) {
                 coarse_vert_offset = 0;   
             }        
         }
