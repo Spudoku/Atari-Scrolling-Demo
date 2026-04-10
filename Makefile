@@ -52,7 +52,7 @@ AFLAGS=-I $(CA65_INC) --debug-info -t $(SYS) -D $(BUILD)
 # Flags for C-code compiler
 CFLAGS=-I ./lib -t $(SYS) --add-source -g -D $(BUILD)
 
-target = adventure.xex
+target = scroll_test.xex
 viceLabel = game.lbl
 
 # list of object files
@@ -60,7 +60,7 @@ engine = main.o
 objects = $(engine)
 		  
 $(target) : $(objects)
-	$(CL) -t $(SYS) -Ln test.lbl -Wl --dbgfile,test.dbg -C atari_modifed.cfg -o $@ $(objects) 
+	$(CL) -t $(SYS) -Ln scroll_test.lbl -Wl --dbgfile,scroll_test.dbg -C atari_modifed.cfg -o $@ $(objects) 
 
 # Rule for making a *.o file out of a *.c file
 %.o: %.c
