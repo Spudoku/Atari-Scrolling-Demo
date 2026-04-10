@@ -9,10 +9,13 @@
     Start Display List Schenanigans
     
 */
+#define HORIZ_WIDTH 32
 
-unsigned char oneRow[20] = 
+#define UPDATE_DELAY 1
+unsigned char oneRow[HORIZ_WIDTH * 2] = 
 {
-0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,20,21,22,23,24,25,26,27,28,29,30,31,
+0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,20,21,22,23,24,25,26,27,28,29,30,31,
 };
 //  20, 21, 22, 23
 
@@ -66,6 +69,7 @@ char DisplayList[] = {
 #pragma data-name (pop)
 
 void dl_Init(){
+    unsigned int i;
     *(unsigned int *)&DisplayList[sizeof(DisplayList) - 2] 
           = (unsigned int)DisplayList;
 
@@ -77,7 +81,10 @@ void dl_Init(){
 
     OS.sdlst = &DisplayList;
 
-    *(unsigned int *)(DisplayList + 4) = (unsigned int)(oneRow);
+    // note: this is pretty expensive!
+    for (i = 0; i < 12; ++i) {
+        *(unsigned int *)(DisplayList + 4 + (i * 3)) = (unsigned int)(oneRow);
+    }  
 }
 
 
@@ -90,13 +97,34 @@ void dl_Init(){
 
 // need to allocate displayList
 int main() {
-    int test = 0;
-    printf("hello world!!!!");
+    signed char fine_horiz_offset = 0;
+    unsigned int coarse_horiz_offset = 0;
+    unsigned int i;
+
     dl_Init();
     while (1) {
-        waitvsync();
-        test = (test++) % 16;
-        ANTIC.hscrol = test;
+        
+        
+
+        if (--fine_horiz_offset < 0) {
+            // move coarsely
+            fine_horiz_offset = 7;
+
+            if (++coarse_horiz_offset >= HORIZ_WIDTH) {
+                coarse_horiz_offset = 0;   
+            }        
+        }
+        
+        for (i = 0; i < UPDATE_DELAY; i++) {
+            waitvsync();
+        }
+        
+        ANTIC.hscrol = fine_horiz_offset;
+
+        for (i = 0; i < 12; ++i) {
+            *(unsigned int *)(DisplayList + 4 + (i * 3)) = (unsigned int)(oneRow) + coarse_horiz_offset + i;
+        }  
+        
+        
     }
-    return 0;
 }
