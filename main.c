@@ -87,6 +87,10 @@ void dl_Init(){
     }  
 }
 
+// TODO: add colors
+void init_colors() {
+
+}
 
 
 
@@ -95,17 +99,104 @@ void dl_Init(){
 */
 
 
+// scrolling helpers
+void horiz_scroll(signed char dir);
+
+void vert_scroll(signed char dir);
+
+// joystick helpers
+unsigned char joystickState = 0;
+
+//extra grandular masks that atari.h doesnt have
+//used for speeding up input processing
+// written suspiciouslyBee
+#define JOY_UPDOWN_MASK 0x03
+
+#define JOY_UPDOWN(v) ((v) & JOY_UPDOWN_MASK)
+
+#define JOY_LEFTRIGHT_MASK 0x0C
+
+#define JOY_LEFTRIGHT(v) ((v) & JOY_LEFTRIGHT_MASK)
+
+
+// variable declarations
+    signed char fine_horiz_offset = 0;
+    signed int coarse_horiz_offset = 0;
+
+    signed char fine_vert_offset = 0;
+    signed int coarse_vert_offset = 0;
+
 // need to allocate displayList
 int main() {
-    signed char fine_horiz_offset = 0;
-    unsigned int coarse_horiz_offset = 0;
-    unsigned int i;
 
+    unsigned int i;
+    signed char horiz_dir = 1;
+    signed char vert_dir = 1;
+
+    // initializing
     dl_Init();
+    init_colors();
+    joy_install(&atrstd_joy);  
     while (1) {
         
-        
+        // TODO: read joystick input
+        joystickState = joy_read(JOY_1);
+        switch(JOY_LEFTRIGHT(joystickState)){
+            case JOY_LEFT_MASK:
+                horiz_dir = -1;
+                break;
+            case JOY_RIGHT_MASK:
+                horiz_dir = 1;
+                break;
+            default:
+                horiz_dir = 0;
+                break;
+        }
+    
+        switch(JOY_UPDOWN(joystickState)){
+            case JOY_UP_MASK: 
+                vert_dir = 1;
+                break;
+            case JOY_DOWN_MASK: //down
+                vert_dir = -1;
+                break;
+            default:  //nothing or null cancelled
+                vert_dir = 0;
+            break;
+        }
 
+        horiz_scroll(horiz_dir);
+        vert_scroll(vert_dir);
+        
+        for (i = 0; i < UPDATE_DELAY; i++) {
+            waitvsync();
+        }
+        
+        ANTIC.hscrol = fine_horiz_offset;
+        ANTIC.vscrol = fine_vert_offset;
+
+        for (i = 0; i < 12; ++i) {
+            *(unsigned int *)(DisplayList + 4 + (i * 3)) = (unsigned int)(oneRow) + coarse_horiz_offset + i;
+        }  
+    }
+}
+
+
+// scrolling helpers definitions
+void horiz_scroll(signed char dir) {
+
+    if (dir > 0) {
+        // scroll left
+        if (++fine_horiz_offset > 7) {
+            // move coarsely
+            fine_horiz_offset = 0;
+
+            if (--coarse_horiz_offset < 0) {
+                coarse_horiz_offset = HORIZ_WIDTH;   
+            }        
+        }
+    } else if (dir < 0) {
+        // scroll right
         if (--fine_horiz_offset < 0) {
             // move coarsely
             fine_horiz_offset = 7;
@@ -114,17 +205,30 @@ int main() {
                 coarse_horiz_offset = 0;   
             }        
         }
-        
-        for (i = 0; i < UPDATE_DELAY; i++) {
-            waitvsync();
-        }
-        
-        ANTIC.hscrol = fine_horiz_offset;
+    }
+    // else; no scrolling
+}
 
-        for (i = 0; i < 12; ++i) {
-            *(unsigned int *)(DisplayList + 4 + (i * 3)) = (unsigned int)(oneRow) + coarse_horiz_offset + i;
-        }  
-        
-        
+void vert_scroll(signed char dir) {
+    if (dir > 0) {
+        // scroll left
+        if (++fine_vert_offset > 7) {
+            // move coarsely
+            fine_vert_offset = 0;
+
+            if (--coarse_vert_offset < 0) {
+                coarse_vert_offset = HORIZ_WIDTH;   
+            }        
+        }
+    } else if (dir < 0) {
+        // scroll right
+        if (--fine_vert_offset < 0) {
+            // move coarsely
+            fine_vert_offset = 7;
+
+            if (++coarse_vert_offset >= HORIZ_WIDTH) {
+                coarse_vert_offset = 0;   
+            }        
+        }
     }
 }

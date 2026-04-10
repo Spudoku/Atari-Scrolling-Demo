@@ -1,0 +1,8 @@
+hi!
+PMbase highbyte: -84
+Player antic index: 0
+Dragon debug antic index: 1
+hi!
+PMbase highbyte: -84
+Player antic index: 0
+Dragon debug antic index: 1
