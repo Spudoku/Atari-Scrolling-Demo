@@ -181,7 +181,8 @@ int main() {
         for (i = 0; i < 12; ++i) {
             target_line = i + coarse_vert_offset;
             if (target_line >= 12) target_line -= 12;
-            *(unsigned int *)(DisplayList + 4 + ((target_line * 3))) = (unsigned int)(oneRow) + coarse_horiz_offset + i;
+            if (target_line < 0) target_line = 12; 
+            *(unsigned int *)(DisplayList + 4 + ((i * 3))) = (unsigned int)(oneRow) + coarse_horiz_offset + i;
         }  
     }
 }
@@ -196,7 +197,7 @@ void horiz_scroll(signed char dir) {
             // move coarsely
             fine_horiz_offset = 0;
 
-            if (--coarse_horiz_offset < 0) {
+            if (++coarse_horiz_offset < 0) {
                 coarse_horiz_offset = HORIZ_WIDTH;   
             }        
         }
@@ -205,8 +206,8 @@ void horiz_scroll(signed char dir) {
         if (--fine_horiz_offset < 0) {
             // move coarsely
             fine_horiz_offset = 7;
-            if (--coarse_vert_offset < 0) {
-                coarse_vert_offset = VERT_HEIGHT;   
+            if (++coarse_vert_offset >= HORIZ_WIDTH) {
+                coarse_vert_offset = 0;   
             }   
                    
         }
@@ -221,8 +222,8 @@ void vert_scroll(signed char dir) {
             // move coarsely
             fine_vert_offset = 0;
 
-            if (++coarse_horiz_offset >= HORIZ_WIDTH) {
-                coarse_horiz_offset = 0;   
+            if (++coarse_vert_offset >= VERT_HEIGHT) {
+                coarse_vert_offset = 0;   
             }  
         }
     } else if (dir < 0) {
