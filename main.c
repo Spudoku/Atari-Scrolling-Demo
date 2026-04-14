@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <unistd.h>
 
-
 #include <atari.h>    // the real meat and potatoes
 #include <joystick.h> // not really necessary right now but...
 
@@ -65,7 +64,7 @@ char DisplayList[] = {
 
     //loop the display list
     DL_JVB,
-    0x00,0x00 //dl loc
+    0x00,0x00 //dl memory location
 };
 #pragma data-name (pop)
 
@@ -139,6 +138,7 @@ int main() {
     // initializing
     dl_Init();
     init_colors();
+    // install joystick driver
     joy_install(&atrstd_joy);  
     while (1) {
         
