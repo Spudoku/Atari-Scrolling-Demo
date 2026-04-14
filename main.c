@@ -182,7 +182,8 @@ int main() {
             target_line = i + coarse_vert_offset;
             if (target_line >= 12) target_line -= 12;
             if (target_line < 0) target_line = 12; 
-            *(unsigned int *)(DisplayList + 4 + ((i * 3))) = (unsigned int)(oneRow) + coarse_horiz_offset + i;
+            // *(unsigned int *)(DisplayList + 4 + ((i * 3))) = (unsigned int)(oneRow) + coarse_horiz_offset + i;
+            *(unsigned int *)(DisplayList + 4 + ((target_line * 3))) = (unsigned int)(oneRow) + i + coarse_horiz_offset;
         }  
     }
 }
@@ -197,8 +198,9 @@ void horiz_scroll(signed char dir) {
             // move coarsely
             fine_horiz_offset = 0;
 
-            if (++coarse_horiz_offset < 0) {
+            if (--coarse_horiz_offset < 0) {
                 coarse_horiz_offset = HORIZ_WIDTH;   
+                fine_horiz_offset = 0;
             }        
         }
     } else if (dir < 0) {
@@ -206,8 +208,9 @@ void horiz_scroll(signed char dir) {
         if (--fine_horiz_offset < 0) {
             // move coarsely
             fine_horiz_offset = 7;
-            if (++coarse_vert_offset >= HORIZ_WIDTH) {
-                coarse_vert_offset = 0;   
+            if (++coarse_horiz_offset >= HORIZ_WIDTH) {
+                coarse_horiz_offset = 0;  
+                fine_horiz_offset = 0;
             }   
                    
         }
@@ -217,24 +220,24 @@ void horiz_scroll(signed char dir) {
 
 void vert_scroll(signed char dir) {
     if (dir > 0) {
-        // scroll left
+        // scroll up
         if (++fine_vert_offset > 7) {
             // move coarsely
             fine_vert_offset = 0;
-
-            if (++coarse_vert_offset >= VERT_HEIGHT) {
-                coarse_vert_offset = 0;   
+            if (--coarse_vert_offset < 0) {
+                coarse_vert_offset = VERT_HEIGHT;   
             }  
+             
         }
     } else if (dir < 0) {
-        // scroll right
+        // scroll down
         if (--fine_vert_offset < 0) {
             // move coarsely
             fine_vert_offset = 7;
-
             if (++coarse_vert_offset >= VERT_HEIGHT) {
                 coarse_vert_offset = 0;   
-            }        
+            } 
+                 
         }
     }
 }
